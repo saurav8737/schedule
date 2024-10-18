@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Schedule Generator by Saurav Kumar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 20px;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            margin: 20px 0;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tbody tr:nth-child(odd) {
+            background-color: #e6f7ff;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 5px;
+            margin: 5px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin-top: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .remarks-section {
+            margin-top: 20px;
+        }
+        @media print {
+            button, input, textarea {
+                display: none;
+            }
+        }
+        .remove-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+        .remove-btn:hover {
+            background-color: #e53935;
+        }
+        #header {
+            text-align: center;
+        }
+        #header img {
+            width: 100px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="header">
+        <img src="/images/smj1.jpg" alt="">
+        <h1>Dynamic Schedule</h1>
+        <div>
+            <label for="scheduleDate"></label>
+            <input type="date" id="scheduleDate">
+        </div>
+    </div>
+
+    <table id="scheduleTable">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Activity</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><input type="time"> to <input type="time"></td>
+                <td><input type="text" placeholder="Enter activity"></td>
+                <td><button class="remove-btn" onclick="removeRow(this)">Remove</button></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <button onclick="addRow()">Add Row</button>
+
+    <div class="remarks-section">
+        <p>Remarks:</p>
+        <textarea id="remarks" rows="4" placeholder="Enter your remarks here..."></textarea>
+    </div>
+
+    <button onclick="prepareForPrint()">Print Schedule</button>
+
+    <script>
+        function addRow() {
+            var table = document.getElementById("scheduleTable").getElementsByTagName("tbody")[0];
+            var newRow = table.insertRow();
+
+            var timeCell = newRow.insertCell(0);
+            var startTimeInput = document.createElement("input");
+            startTimeInput.type = "time";
+            var endTimeInput = document.createElement("input");
+            endTimeInput.type = "time";
+            timeCell.appendChild(startTimeInput);
+            timeCell.appendChild(document.createTextNode(" to "));
+            timeCell.appendChild(endTimeInput);
+
+            var activityCell = newRow.insertCell(1);
+            var activityInput = document.createElement("input");
+            activityInput.type = "text";
+            activityInput.placeholder = "Enter activity";
+            activityCell.appendChild(activityInput);
+
+            var actionsCell = newRow.insertCell(2);
+            var removeButton = document.createElement("button");
+            removeButton.innerHTML = "Remove";
+            removeButton.className = "remove-btn";
+            removeButton.onclick = function() {
+                removeRow(this);
+            };
+            actionsCell.appendChild(removeButton);
+        }
+
+        function removeRow(button) {
+            var row = button.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+        }
+
+        function prepareForPrint() {
+            var table = document.getElementById("scheduleTable");
+            var rows = table.querySelectorAll('tbody tr');
+            
+            rows.forEach(function(row) {
+                var timeInputs = row.querySelectorAll('input[type="time"]');
+                var startTime = timeInputs[0].value || 'N/A';
+                var endTime = timeInputs[1].value || 'N/A';
+
+                // Update time cell to display 'startTime to endTime'
+                var timeCell = row.cells[0];
+                timeCell.innerHTML = startTime + " to " + endTime;
+
+                // Capture activity input value
+                var activityInput = row.querySelector('input[type="text"]');
+                var activity = activityInput.value || activityInput.placeholder;
+                
+                // Update activity cell to plain text
+                var activityCell = row.cells[1];
+                activityCell.innerHTML = activity;
+            });
+
+            // Add date to the print view
+            var dateInput = document.getElementById("scheduleDate").value;
+            var dateElement = document.createElement("h2");
+            dateElement.textContent = "Schedule Date: " + (dateInput ? dateInput : "N/A");
+            document.getElementById("header").appendChild(dateElement);
+
+            // Print the schedule
+            window.print();
+
+            // Restore inputs after print (optional, if you want to go back to editable form after printing)
+            rows.forEach(function(row) {
+                var timeCell = row.cells[0];
+                var timeInputs = row.querySelectorAll('input[type="time"]');
+                var startTime = timeCell.textContent.split(" to ")[0].trim();
+                var endTime = timeCell.textContent.split(" to ")[1].trim();
+                timeCell.innerHTML = '<input type="time" value="' + startTime + '"> to <input type="time" value="' + endTime + '">';
+
+                var activityCell = row.cells[1];
+                var activityText = activityCell.textContent;
+                activityCell.innerHTML = '<input type="text" value="' + activityText + '" placeholder="Enter activity">';
+            });
+
+            // Remove the appended date element after printing
+            document.getElementById("header").removeChild(dateElement);
+        }
+    </script>
+
+</body>
+</html>
